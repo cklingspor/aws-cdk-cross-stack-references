@@ -2,7 +2,7 @@
   "name": "cdk_cross_stack_references",
   "version": "0.1.0",
   "bin": {
-    "cdk_cross_stack_references": "bin/cdk_cross_stack_references.js"
+    "cdk_cross_stack_references": "bin/problemStack.ts"
   },
   "scripts": {
     "build": "tsc",
