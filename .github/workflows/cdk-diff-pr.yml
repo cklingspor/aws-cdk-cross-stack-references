@@ -49,6 +49,9 @@ jobs:
 
   post-diff-comment:
     needs: diff-infrastructure
+    permissions:
+      contents: read
+      pull-requests: write
     uses: ./.github/workflows/cdk-diff-comment.yml
     with:
       diff-file: cdk-diff-output.txt
