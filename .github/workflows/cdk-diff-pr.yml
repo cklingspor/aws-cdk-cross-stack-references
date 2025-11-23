@@ -1,0 +1,55 @@
+name: CDK Diff on PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  diff-infrastructure:
+    name: Generate CDK Diff
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build CDK App
+        run: npm run build
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/GitHubAction
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: eu-central-1
+
+      - name: Run CDK Diff
+        run: |
+          npx cdk diff --no-color 2>&1 | tee cdk-diff-output.txt
+        continue-on-error: true
+
+      - name: Upload Diff Artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: cdk-diff-artifact
+          path: cdk-diff-output.txt
+          retention-days: 7
+
+  post-diff-comment:
+    needs: diff-infrastructure
+    uses: ./.github/workflows/cdk-diff-comment.yml
+    with:
+      diff-file: cdk-diff-output.txt
+      aws-region: eu-central-1

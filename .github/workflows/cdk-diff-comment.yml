@@ -1,0 +1,35 @@
+name: Reusable CDK Diff PR Comment
+
+on:
+  workflow_call:
+    inputs:
+      diff-file:
+        description: 'Path to the CDK diff output file'
+        type: string
+        required: true
+      aws-region:
+        description: 'AWS Region where resources will be deployed'
+        type: string
+
+jobs:
+  comment-cdk-diff:
+    name: Post CDK Diff as PR Comment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Download Diff Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: cdk-diff-artifact
+
+      - name: Post CDK Diff Comment in PR
+        uses: towardsthecloud/aws-cdk-diff-pr-commenter@v1
+        with:
+          diff-file: ${{ inputs.diff-file }}
+          aws-region: ${{ inputs.aws-region }}
